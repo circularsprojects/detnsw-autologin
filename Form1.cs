@@ -16,9 +16,8 @@ namespace detnsw_autologin
 {
     public partial class Form1 : Form
     {
-        public string fileName = Path.Combine(Environment.GetFolderPath(
-                Environment.SpecialFolder.ApplicationData), "circularsprojects", "settings.json");
-
+        public string fileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "circularsprojects", "detnsw-autologin", "settings.json");
+        public string version = "1.0";
         public Form1()
         {
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
@@ -39,11 +38,11 @@ namespace detnsw_autologin
         private void button1_Click(object sender, EventArgs e)
         {
             try {
-                WebRequest request = WebRequest.Create("https://edgeportal.det.nsw.edu.au:6082/php/uid.php?vsys=1&rule=0");
+                WebRequest request = WebRequest.Create("https://edgeportal.forti.net.det.nsw.edu.au/portal/selfservice/IatE_CP/");
                 request.Method = "POST";
                 request.Timeout = 5000;
 
-                string postData = $"inputStr=&escapeUser=&preauthid=&user={textBox1.Text}&passwd={textBox2.Text}&ok=Login";
+                string postData = $"csrfmiddlewaretoken=&username={textBox1.Text}&password={textBox2.Text}";
                 byte[] byteArray = Encoding.UTF8.GetBytes(postData);
 
                 request.ContentType = "application/x-www-form-urlencoded";
@@ -77,6 +76,25 @@ namespace detnsw_autologin
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            #region checking for updates (disabled, could not create SSL/TLS secure channel (server issue?!?!?!))
+            /*
+            try
+            {
+                var request = WebRequest.Create("https://circularsprojects.com/detnsw-autologin");
+                request.Method = "GET";
+                var webResponse = request.GetResponse();
+                var webStream = webResponse.GetResponseStream();
+                var reader = new StreamReader(webStream);
+                var data = reader.ReadToEnd();
+                if (data != version) { MessageBox.Show("detnsw-autologin is not up to date.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error checking for updates, {ex}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            */
+            #endregion
+            #region registry startup
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1)
             {
@@ -90,11 +108,11 @@ namespace detnsw_autologin
                         var jsonobj = JObject.Parse(jsonfile);
                         username = jsonobj.SelectToken("username").Value<string>();
                         password = jsonobj.SelectToken("password").Value<string>();
-                        WebRequest request = WebRequest.Create("https://edgeportal.det.nsw.edu.au:6082/php/uid.php?vsys=1&rule=0");
+                        WebRequest request = WebRequest.Create("https://edgeportal.forti.net.det.nsw.edu.au/portal/selfservice/IatE_CP/");
                         request.Method = "POST";
                         request.Timeout = 5000;
 
-                        string postData = $"inputStr=&escapeUser=&preauthid=&user={username}&passwd={password}&ok=Login";
+                        string postData = $"csrfmiddlewaretoken=&username={username}&password={password}";
                         byte[] byteArray = Encoding.UTF8.GetBytes(postData);
 
                         request.ContentType = "application/x-www-form-urlencoded";
@@ -110,13 +128,19 @@ namespace detnsw_autologin
                     Application.Exit();
                 }
             }
-            Console.WriteLine(fileName);
-            try {
-            if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "circularsprojects")))
+            #endregion
+            #region checking for appdata settings file
+            try
             {
-                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "circularsprojects"));
+            //if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "circularsprojects")))
+            //{
+            //    Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "circularsprojects"));
+            //}
+            if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "circularsprojects", "detnsw-autologin")))
+            {
+                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "circularsprojects", "detnsw-autologin"));
             }
-            if (!File.Exists(fileName))
+                if (!File.Exists(fileName))
             {
                 File.WriteAllText(fileName, "{\"username\":\"\",\"password\":\"\"}");
             }
@@ -124,7 +148,10 @@ namespace detnsw_autologin
             {
                 MessageBox.Show("Error creating settings file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            try {
+            #endregion
+            #region reading settings file
+            try
+            {
                 var myJsonString = File.ReadAllText(fileName);
                 var myJObject = JObject.Parse(myJsonString);
                 textBox1.Text = myJObject.SelectToken("username").Value<string>();
@@ -133,7 +160,10 @@ namespace detnsw_autologin
             {
                 MessageBox.Show("Error reading settings file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            try {
+            #endregion
+            #region checking registry
+            try
+            {
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run");
                 object o = key.GetValue("detnsw-autologin", null);
             if (o != null)
@@ -148,6 +178,7 @@ namespace detnsw_autologin
             {
                 MessageBox.Show("Error reading registry", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            #endregion
         }
 
         private void button3_Click(object sender, EventArgs e)
