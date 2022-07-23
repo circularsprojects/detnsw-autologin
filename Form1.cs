@@ -51,8 +51,9 @@ namespace detnsw_autologin
                 Stream dataStream = request.GetRequestStream();
                 dataStream.Write(byteArray, 0, byteArray.Length);
                 dataStream.Close();
-            } catch {
-                MessageBox.Show("Could not connect to the server after 5000 milliseconds.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            } catch(Exception ex) {
+                MessageBox.Show("Either the app cannot connect to the server, or something went wrong.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error (unless you know what this means, you should just ignore this)\n\n" + ex.ToString(), "Error message", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
