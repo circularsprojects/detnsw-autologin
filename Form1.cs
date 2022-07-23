@@ -72,7 +72,7 @@ namespace detnsw_autologin
 
         private void button2_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start("https://edgeportal.det.nsw.edu.au:6082/php/uid.php?vsys=1&rule=0");
+            System.Diagnostics.Process.Start("https://edgeportal.forti.net.det.nsw.edu.au/portal/selfservice/IatE_CP/");
         }
 
         private void Form1_Load(object sender, EventArgs e)
