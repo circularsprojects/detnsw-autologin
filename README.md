@@ -5,4 +5,4 @@ an app that automatically logs into the detnsw internet for public schools in NS
 ## to-do
 move the settings file somewhere else
 ## report a bug/problem or suggest a feature
-inquiries@circularsprojects.com
+inquiries@circularsprojects.com or just contact me on discord lmao
